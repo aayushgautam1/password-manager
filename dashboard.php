@@ -1,17 +1,33 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id'])) { header('Location: index.php'); exit; }
+
 require_once 'config/database.php';
 require_once 'classes/PasswordEntry.php';
 require_once 'classes/PasswordGenerator.php';
+
 $masterKey = base64_decode($_SESSION['master_key']);
 $entry = new PasswordEntry($pdo, $_SESSION['user_id'], $masterKey);
-if ($_POST['save']) { $entry->save($_POST['website'], $_POST['password']); header('Location: dashboard.php'); exit; }
-$generated = '';
-if ($_POST['generate']) {
-    $generated = PasswordGenerator::generate((int)$_POST['length'], (int)$_POST['lower'], (int)$_POST['upper'], (int)$_POST['numbers'], (int)$_POST['specials']);
+
+// Handle form submissions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['save'])) {
+        $entry->save($_POST['website'], $_POST['password']);
+        header('Location: dashboard.php');
+        exit;
+    } elseif (isset($_POST['generate'])) {
+        $generated = PasswordGenerator::generate(
+            (int)$_POST['length'],
+            (int)$_POST['lower'],
+            (int)$_POST['upper'],
+            (int)$_POST['numbers'],
+            (int)$_POST['specials']
+        );
+    }
 }
+
 $entries = $entry->getAll();
+$generated = $generated ?? '';
 ?>
 <!DOCTYPE html>
 <html><head><title>Dashboard</title><style>
