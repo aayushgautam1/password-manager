@@ -6,21 +6,19 @@ require_once 'classes/User.php';
 $user = new User($pdo);
 $message = '';
 
-// Check if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['register'])) {
-        // Register attempt
         if ($user->register($_POST['username'], $_POST['password'])) {
             $message = "Registration OK. You can now login.";
         } else {
             $message = "Username already exists.";
         }
     } elseif (isset($_POST['login'])) {
-        // Login attempt
         $result = $user->login($_POST['username'], $_POST['password']);
         if ($result) {
             $_SESSION['user_id'] = $result['id'];
             $_SESSION['master_key'] = base64_encode($result['masterKey']);
+            $_SESSION['username'] = $_POST['username'];   // <-- added line
             header('Location: dashboard.php');
             exit;
         } else {
